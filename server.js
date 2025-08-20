@@ -160,58 +160,62 @@ app.post('/slack/lunch', (req, res) => {
 
 // Handle interactive button clicks
 app.post('/slack/interactive', (req, res) => {
-    const payload = JSON.parse(req.body.payload);
-    
-    console.log('Interactive request:', payload.actions[0].action_id, 'from user:', payload.user.name);
-    
-    if (payload.actions[0].action_id === "spin_again") {
-        const restaurant = getRandomRestaurant();
+    try {
+        const payload = JSON.parse(req.body.payload);
         
-        // Create new response with fresh restaurant
-        const response = {
-            replace_original: true,
-            blocks: [
-                {
-                    type: "section",
-                    text: {
-                        type: "mrkdwn",
-                        text: `🍽️ *${restaurant.name}*${restaurant.note ? `\n_${restaurant.note}_` : ''}`
-                    }
-                },
-                {
-                    type: "actions",
-                    elements: [
-                        {
-                            type: "button",
-                            text: {
-                                type: "plain_text",
-                                text: "📍 View on Maps"
-                            },
-                            url: restaurant.url,
-                            action_id: "view_map"
-                        },
-                        {
-                            type: "button",
-                            text: {
-                                type: "plain_text",
-                                text: "🎲 Try again"
-                            },
-                            action_id: "spin_again",
-                            value: "spin_again"
+        console.log('Interactive request:', payload.actions[0].action_id, 'from user:', payload.user.name);
+        
+        if (payload.actions[0].action_id === "spin_again") {
+            const restaurant = getRandomRestaurant();
+            
+            // Send the exact same format as the original slash command
+            const noteText = restaurant.note ? `\n_${restaurant.note}_` : '';
+            
+            const response = {
+                replace_original: true,
+                blocks: [
+                    {
+                        type: "section",
+                        text: {
+                            type: "mrkdwn",
+                            text: `🍽️ *${restaurant.name}*${noteText}`
                         }
-                    ]
-                }
-            ]
-        };
-        
-        res.json(response);
-    } else {
-        // Acknowledge the maps button click
-        res.json({
-            response_type: "ephemeral",
-            text: "👍 Opening maps...",
-            delete_original: false
-        });
+                    },
+                    {
+                        type: "actions",
+                        elements: [
+                            {
+                                type: "button",
+                                text: {
+                                    type: "plain_text",
+                                    text: "📍 View on Maps"
+                                },
+                                url: restaurant.url,
+                                action_id: "view_map"
+                            },
+                            {
+                                type: "button",
+                                text: {
+                                    type: "plain_text",
+                                    text: "🎲 Try again"
+                                },
+                                action_id: "spin_again",
+                                value: "spin_again"
+                            }
+                        ]
+                    }
+                ]
+            };
+            
+            console.log('Sending new restaurant:', restaurant.name);
+            res.json(response);
+        } else {
+            // For maps button, just acknowledge
+            res.status(200).send('');
+        }
+    } catch (error) {
+        console.error('Interactive handler error:', error);
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 
