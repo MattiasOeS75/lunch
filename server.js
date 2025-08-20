@@ -162,23 +162,55 @@ app.post('/slack/lunch', (req, res) => {
 app.post('/slack/interactive', (req, res) => {
     const payload = JSON.parse(req.body.payload);
     
-    console.log('Interactive request:', payload.actions[0].action_id);
+    console.log('Interactive request:', payload.actions[0].action_id, 'from user:', payload.user.name);
     
     if (payload.actions[0].action_id === "spin_again") {
         const restaurant = getRandomRestaurant();
-        const response = formatSlackResponse(restaurant, false);
         
-        // Send replacement message
-        res.json({
+        // Create new response with fresh restaurant
+        const response = {
             replace_original: true,
-            response_type: "ephemeral",
-            blocks: response.blocks
-        });
+            blocks: [
+                {
+                    type: "section",
+                    text: {
+                        type: "mrkdwn",
+                        text: `🍽️ *${restaurant.name}*${restaurant.note ? `\n_${restaurant.note}_` : ''}`
+                    }
+                },
+                {
+                    type: "actions",
+                    elements: [
+                        {
+                            type: "button",
+                            text: {
+                                type: "plain_text",
+                                text: "📍 View on Maps"
+                            },
+                            url: restaurant.url,
+                            action_id: "view_map"
+                        },
+                        {
+                            type: "button",
+                            text: {
+                                type: "plain_text",
+                                text: "🎲 Try again"
+                            },
+                            action_id: "spin_again",
+                            value: "spin_again"
+                        }
+                    ]
+                }
+            ]
+        };
+        
+        res.json(response);
     } else {
-        // Acknowledge other button clicks
+        // Acknowledge the maps button click
         res.json({
             response_type: "ephemeral",
-            text: "👍 Opening maps..."
+            text: "👍 Opening maps...",
+            delete_original: false
         });
     }
 });
