@@ -9,7 +9,7 @@ app.use(express.json());
 // Restaurant data from your CSV
 const restaurants = [
     {name: "Brisket and friends", note: "Lunch endast på FREDAGAR!", url: "https://www.google.com/maps/place/Brisket+and+friends/data=!4m2!3m1!1s0x465f9d58b91c3913:0x6cdaf3a25244983e", cuisine: "american"},
-    {name: "Eat Sthlm", note: "", url: "https://www.google.com/maps/place/Eat+Sthlm/data=!4m2!3m1!1s0x465f9db440a17821:0x3521e0bee7984d10", cuisine: "international"},
+    {name: "MOAS", note: "", url: "https://maps.app.goo.gl/ahp4LJ8eWkLCY31H7", cuisine: "kebab"},
     {name: "Totemo Ramen", note: "", url: "https://www.google.com/maps/place/Totemo+Ramen/data=!4m2!3m1!1s0x465f9d7bc299384b:0xb832d1c1a7c10ec3", cuisine: "japanese"},
     {name: "Between buns", note: "", url: "https://www.google.com/maps/place/Between+buns/data=!4m2!3m1!1s0x465f7c807aa8647b:0x248807eab1279689", cuisine: "burgers"},
     {name: "Manoshe - the hummus club", note: "", url: "https://www.google.com/maps/place/Manoshe+-+the+hummus+club/data=!4m2!3m1!1s0x465f9da6f55fa697:0x89bce69473e826de", cuisine: "middle-eastern"},
@@ -40,7 +40,6 @@ const restaurants = [
     {name: "Restaurang Kinamuren", note: "", url: "https://www.google.com/maps/place/Restaurang+Kinamuren/data=!4m2!3m1!1s0x465f9d7004640a6b:0x200d7e2243b64bb0", cuisine: "chinese"},
     {name: "Le Kebab Odenplan", note: "", url: "https://www.google.com/maps/place/Le+Kebab+Odenplan/data=!4m2!3m1!1s0x465f9d09ff8b0b59:0x69010d9b07956f0d", cuisine: "kebab"},
     {name: "Indian Street Food & Co", note: "", url: "https://www.google.com/maps/place/Indian+Street+Food+%26+Co/data=!4m2!3m1!1s0x465f9dbcac2842b9:0x4e5dcd1a36dd4234", cuisine: "indian"},
-    {name: "Xulo", note: "", url: "https://www.google.com/maps/place/Xulo/data=!4m2!3m1!1s0x465f9ddde6e87885:0xe273351fcc874209", cuisine: "international"},
     {name: "Take ramen", note: "", url: "https://www.google.com/maps/place/Take+ramen/data=!4m2!3m1!1s0x465f9d2d844fb25b:0xe6fa9330d392571e", cuisine: "japanese"}
 ];
 
