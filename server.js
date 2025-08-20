@@ -176,6 +176,21 @@ app.post('/slack/interactive', (req, res) => {
     }
 });
 
+// Root endpoint
+app.get('/', (req, res) => {
+    res.json({
+        message: '🍽️ Crosby Lunch Roulette API',
+        status: 'running',
+        endpoints: {
+            health: '/health',
+            restaurants: '/restaurants',
+            slack_command: '/slack/lunch',
+            slack_interactive: '/slack/interactive'
+        },
+        restaurants: restaurants.length
+    });
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
     res.json({ 
