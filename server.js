@@ -87,15 +87,6 @@ function formatSlackResponse(restaurant, isPublic = false) {
                         },
                         url: restaurant.url,
                         action_id: "view_map"
-                    },
-                    {
-                        type: "button",
-                        text: {
-                            type: "plain_text",
-                            text: "🎲 Try again"
-                        },
-                        action_id: "spin_again",
-                        value: "spin_again"
                     }
                 ]
             }
@@ -136,19 +127,17 @@ app.get('/restaurants', (req, res) => {
     });
 });
 
-// Main slash command endpoint
+// Main slash command endpoint - PRIVATE lunch suggestions
 app.post('/slack/lunch', (req, res) => {
-    const { text, user_name, response_url } = req.body;
+    const { text, user_name } = req.body;
     
-    console.log(`Lunch request from ${user_name}: "${text}"`);
+    console.log(`Private lunch request from ${user_name}: "${text}"`);
     
     // Parse command arguments
-    const args = text ? text.trim().toLowerCase().split(' ') : [];
-    const isPublic = args.includes('public') || args.includes('share');
-    const filter = args.find(arg => !['public', 'share', 'help'].includes(arg));
+    const filter = text ? text.trim().toLowerCase() : null;
     
     // Handle help command
-    if (text === 'help' || text === '') {
+    if (text === 'help') {
         return res.json({
             response_type: "ephemeral",
             text: "🍽️ *Crosby Lunch Roulette Help*",
@@ -157,7 +146,7 @@ app.post('/slack/lunch', (req, res) => {
                     type: "section",
                     text: {
                         type: "mrkdwn",
-                        text: "*Available commands:*\n• `/lunch` - Random restaurant\n• `/lunch asian` - Filter by cuisine\n• `/lunch public` - Share result with channel\n• `/lunch asian public` - Filter + share\n• `/lunch help` - Show this help"
+                        text: "*Available commands:*\n• `/lunch` - Random restaurant (private)\n• `/lunch japanese` - Filter by cuisine (private)\n• `/luncha` - Random restaurant (shared with channel)\n• `/luncha italian` - Filter + share with channel\n• `/lunch help` - Show this help"
                     }
                 },
                 {
@@ -171,12 +160,12 @@ app.post('/slack/lunch', (req, res) => {
         });
     }
     
-    // Get random restaurant
+    // Get random restaurant (always private)
     const restaurant = getRandomRestaurant(filter);
-    const response = formatSlackResponse(restaurant, isPublic);
+    const response = formatSlackResponse(restaurant, false);
     
     // Add filter info if used
-    if (filter) {
+    if (filter && filter !== 'help') {
         response.blocks.unshift({
             type: "context",
             elements: [
@@ -191,15 +180,72 @@ app.post('/slack/lunch', (req, res) => {
     res.json(response);
 });
 
-// Simple interactive handler that just acknowledges
+// Public lunch command endpoint - SHARE with channel
+app.post('/slack/luncha', (req, res) => {
+    const { text, user_name } = req.body;
+    
+    console.log(`PUBLIC lunch request from ${user_name}: "${text}"`);
+    
+    // Parse command arguments
+    const filter = text ? text.trim().toLowerCase() : null;
+    
+    // Handle help command
+    if (text === 'help') {
+        return res.json({
+            response_type: "ephemeral",
+            text: "🍽️ *Luncha Command Help*",
+            blocks: [
+                {
+                    type: "section",
+                    text: {
+                        type: "mrkdwn",
+                        text: "The `/luncha` command shares lunch suggestions with the entire channel!\n\n*Examples:*\n• `/luncha` - Random restaurant for everyone\n• `/luncha japanese` - Japanese restaurants for the team\n• `/luncha burgers` - Burger places shared publicly"
+                    }
+                }
+            ]
+        });
+    }
+    
+    // Get random restaurant (always public)
+    const restaurant = getRandomRestaurant(filter);
+    const response = formatSlackResponse(restaurant, true);
+    
+    // Add filter info if used
+    if (filter && filter !== 'help') {
+        response.blocks.unshift({
+            type: "context",
+            elements: [
+                {
+                    type: "mrkdwn",
+                    text: `${user_name} filtered by: *${filter}*`
+                }
+            ]
+        });
+    } else if (!filter) {
+        response.blocks.unshift({
+            type: "context",
+            elements: [
+                {
+                    type: "mrkdwn",
+                    text: `${user_name} spun the lunch roulette! 🎰`
+                }
+            ]
+        });
+    }
+    
+    res.json(response);
+});
+
+// Simple interactive handler - just acknowledge maps button clicks
 app.post('/slack/interactive', (req, res) => {
-    console.log('Button clicked - acknowledging');
+    console.log('Maps button clicked');
     res.status(200).send('');
 });
 
 app.listen(port, () => {
     console.log(`🍽️ Crosby Lunch Roulette API running on port ${port}`);
-    console.log(`📍 Slack endpoint: /slack/lunch`);
+    console.log(`📍 Private lunch: /slack/lunch`);
+    console.log(`📢 Public lunch: /slack/luncha`);
     console.log(`🏥 Health check: /health`);
 });
 
