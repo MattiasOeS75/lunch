@@ -162,17 +162,24 @@ app.post('/slack/lunch', (req, res) => {
 app.post('/slack/interactive', (req, res) => {
     const payload = JSON.parse(req.body.payload);
     
+    console.log('Interactive request:', payload.actions[0].action_id);
+    
     if (payload.actions[0].action_id === "spin_again") {
         const restaurant = getRandomRestaurant();
         const response = formatSlackResponse(restaurant, false);
         
-        // Update the original message
+        // Send replacement message
         res.json({
             replace_original: true,
-            ...response
+            response_type: "ephemeral",
+            blocks: response.blocks
         });
     } else {
-        res.status(200).send();
+        // Acknowledge other button clicks
+        res.json({
+            response_type: "ephemeral",
+            text: "👍 Opening maps..."
+        });
     }
 });
 
